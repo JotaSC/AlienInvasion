@@ -10,3 +10,7 @@ class Settings:
 
         # Configuración de la nave
         self.ship_speed = 2.5
+
+        # Configuración de los disparos
+        self.bullet_speed = 2.0
+        self.bullets_allowed = 5
