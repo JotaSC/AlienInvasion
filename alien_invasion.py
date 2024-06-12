@@ -4,6 +4,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 class AlienInvasion:
     """Clase general para controlar los 'game assets' y el comportamiento"""
@@ -21,6 +22,9 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
     def run_game(self):
         """Empieza el main loop para el juego"""
@@ -34,12 +38,12 @@ class AlienInvasion:
     def _check_events(self):
         """Responde a los eventos ocurridos (ratón y teclado)"""
         for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    self._check_keydown_events(event)
-                elif event.type == pygame.KEYUP:
-                    self._check_keyup_events(event)
+            if event.type == pygame.QUIT:
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                self._check_keydown_events(event)
+            elif event.type == pygame.KEYUP:
+                self._check_keyup_events(event)
 
     def _check_keydown_events(self, event):
         """Responde a los eventos de pulsar"""
@@ -79,12 +83,28 @@ class AlienInvasion:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
 
+    def _create_fleet(self):
+        """Crea la flota de aliens"""
+        # Crea un alien y sigue añadiendo aliens mientras haya espacio
+        # El espacio entre alien y alien es de medio alien
+        alien = Alien(self)
+        alien_width = alien.rect.width
+
+        current_x = 0.25 * alien_width 
+        while current_x < (self.settings.screen_width - 1.3 * alien_width):
+            new_alien = Alien(self)
+            new_alien.x = current_x
+            new_alien.rect.x = current_x
+            self.aliens.add(new_alien)
+            current_x += 1.3 * alien_width
+
     def _update_screen(self):
         """Actualiza la imagen en pantalla y visualiza la nueva imagen"""
         self.screen.fill(self.settings.bg_color)
-        self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.ship.blitme()
+        self.aliens.draw(self.screen)
         pygame.display.flip()
 
 

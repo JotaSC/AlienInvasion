@@ -9,8 +9,8 @@ class Settings:
         self.bg_color = (82, 85, 116)
 
         # Configuración de la nave
-        self.ship_speed = 2.5
+        self.ship_speed = 3.0
 
         # Configuración de los disparos
-        self.bullet_speed = 2.0
+        self.bullet_speed = 3.5
         self.bullets_allowed = 5
