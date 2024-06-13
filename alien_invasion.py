@@ -1,7 +1,9 @@
 import sys
 import pygame
+import time
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -20,19 +22,24 @@ class AlienInvasion:
             (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
 
+        self.stats = GameStats(self)
+
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
 
         self._create_fleet()
+        # Flag para poder detener el juego una vez ha habido GAME OVER
+        self.game_active = True
 
     def run_game(self):
         """Empieza el main loop para el juego"""
         while True:
             self._check_events()
-            self.ship.update()
-            self._update_bullets()
-            self._update_aliens()
+            if self.game_active:
+                self.ship.update()
+                self._update_bullets()
+                self._update_aliens()
             self._update_screen()
             self.clock.tick(60)
 
@@ -93,8 +100,6 @@ class AlienInvasion:
             self.bullets.empty()
             self._create_fleet()
 
-
-
     def _fire_bullet(self):
         """Crea una nueva bala y la añade al grupo de balas"""
         if len(self.bullets) < self. settings.bullets_allowed:
@@ -143,6 +148,37 @@ class AlienInvasion:
         """Actualiza la posición de todos los aliens de la flota"""
         self._check_fleet_edges()
         self.aliens.update()
+
+        # Revisa si ha habido una colisión alien-nave
+        for alien in self.aliens:
+            if alien.rect.bottom >= (
+                self.settings.screen_height - self.ship.rect.height):
+                    self._ship_hit()
+                    break
+
+    def _ship_hit(self):
+        """Interactúa cuando un alien llega a la altura de la nave"""
+        if self.stats.ships_left > 0:
+            # Decrementa las vidas de la nave
+            self.stats.ships_left -= 1
+            # Muestra cómo los aliens han llegado a la altura de la nave
+            self._update_screen()
+            # Espera 1s
+            time.sleep(1)
+
+            # Deshacerse de las balas y aliens
+            self.bullets.empty()
+            self.aliens.empty()
+
+            # Crear una nueva flota y volver a centrar la nave
+            self._create_fleet()
+            self.ship.center_ship()
+
+            # Elimina los eventos de teclado (evitar disparos falsos tras morir)
+            pygame.event.clear()
+            self.ship.restart_movements_flags()
+        else:
+            self.game_active = False
 
     def _update_screen(self):
         """Actualiza la imagen en pantalla y visualiza la nueva imagen"""

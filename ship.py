@@ -13,15 +13,10 @@ class Ship:
         self.image = pygame.image.load('images/ship.bmp')
         self.rect = self.image.get_rect()
 
-        # Coloca el barco en el centro-abajo de la pantalla
-        self.rect.midbottom = self.screen_rect.midbottom
-
-        # Guarda un float para la posición horizontal exacta de la nave
-        self.x = float(self.rect.x)
+        self.center_ship()
 
         # Flag de movimiento; empieza con una nave que no se mueve
-        self.moving_right = False
-        self.moving_left = False
+        self.restart_movements_flags()
 
     def update(self):
         """Actualiza la posición de la nave según la flag de movimiento"""
@@ -33,6 +28,16 @@ class Ship:
 
         # Actualiza la posición x del rectángulo a partir de la de la nave.
         self.rect.x = self.x
+
+    def center_ship(self):
+        """Coloca el barco en el centro-abajo de la pantalla"""
+        self.rect.midbottom = self.screen_rect.midbottom
+        # Guarda un float para la posición horizontal exacta de la nave
+        self.x = float(self.rect.x)
+
+    def restart_movements_flags(self):
+        self.moving_right = False
+        self.moving_left = False
 
     def blitme(self):
         """Dibuja la nave en su posición actual"""
