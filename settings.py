@@ -14,3 +14,9 @@ class Settings:
         # Configuración de los disparos
         self.bullet_speed = 3.5
         self.bullets_allowed = 5
+
+        # Configuración de los aliens
+        self.alien_speed = 1.0
+        self.fleet_drop_speed = 20
+        # Dirección hacia donde se mueven los aliens (1 derecha, -1 izquierda)
+        self.fleet_direction = 1

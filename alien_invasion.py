@@ -32,6 +32,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
             self.clock.tick(60)
 
@@ -72,10 +73,27 @@ class AlienInvasion:
         # Actualiza la posición de las balas.
         self.bullets.update()
 
+        # Revisa si alguna bala ha colisionado con un alien.
+        # Si lo ha hecho, elimina la bala y el alien.
+        self._check_bullet_alien_collisions()
+
         # Deshacerse de las balas que han desaparecido
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
+
+    def _check_bullet_alien_collisions(self):
+        """Responde a las colisiones bala-alien"""
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens, True, True
+        )
+
+        if not self.aliens:
+            # Destruye las balas existentes y crea una nueva flota
+            self.bullets.empty()
+            self._create_fleet()
+
+
 
     def _fire_bullet(self):
         """Crea una nueva bala y la añade al grupo de balas"""
@@ -86,17 +104,45 @@ class AlienInvasion:
     def _create_fleet(self):
         """Crea la flota de aliens"""
         # Crea un alien y sigue añadiendo aliens mientras haya espacio
-        # El espacio entre alien y alien es de medio alien
+        # El espacio entre alien y alien es 0.3 alien (altura y anchura)
         alien = Alien(self)
-        alien_width = alien.rect.width
+        alien_width, alien_height = alien.rect.size
 
-        current_x = 0.25 * alien_width 
-        while current_x < (self.settings.screen_width - 1.3 * alien_width):
-            new_alien = Alien(self)
-            new_alien.x = current_x
-            new_alien.rect.x = current_x
-            self.aliens.add(new_alien)
-            current_x += 1.3 * alien_width
+        current_x , current_y = 1 * alien_width, 0.25 * alien_height 
+        while current_y < (self.settings.screen_height - 5 * alien_height):
+            while current_x < (self.settings.screen_width - 1.28 * alien_width):
+                self._create_alien(current_x, current_y)
+                current_x += 1.28 * alien_width
+            
+            # Acaba la fila, resetear la X y aumentar la Y.
+            current_x = 1 * alien_width
+            current_y += 1.1 * alien_height
+    
+    def _check_fleet_edges(self):
+        """Responde apropiadamente si un alien toca el borde de la pantalla"""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """Baja la flota entera una altura y cambia su dirección movimiento"""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
+
+    def _create_alien(self, position_x, position_y):
+        """Crea un alien y lo coloca en su posición"""
+        new_alien = Alien(self)
+        new_alien.x = position_x
+        new_alien.rect.x = position_x
+        new_alien.rect.y = position_y
+        self.aliens.add(new_alien)
+
+    def _update_aliens(self):
+        """Actualiza la posición de todos los aliens de la flota"""
+        self._check_fleet_edges()
+        self.aliens.update()
 
     def _update_screen(self):
         """Actualiza la imagen en pantalla y visualiza la nueva imagen"""
